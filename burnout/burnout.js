@@ -10,7 +10,7 @@ export function hashCode(s) {
 	);
 }
 
-// Write the content to the file if it's different than what is already ther
+// Write the content to the file if it's different than what is already there
 async function writeIfNotSame(ns, filename, content) {
 	if (ns.read(filename) != content) {
 		await ns.write(filename, content, 'w');
@@ -101,7 +101,82 @@ export class Server {
 			}
 		})();
 	}
-    get maxMoney() {
+	get hackDifficulty() {
+		return (async () => {
+			try {
+				return await Do(this.ns, "ns.getServerSecurityLevel", this.name);
+			} catch(e) {
+				return -1;
+			}
+		})();
+	}
+	get hasAdminRights() {
+		return (async () => {
+			try {
+				return await Do(this.ns, "ns.hasRootAccess", this.name);
+			} catch(e) {
+				return false;
+			}
+		})();
+	}
+	get hostname() {
+		return this.name;
+	}
+	get httpPortOpen() {
+        return (async () => {
+			try {
+				return (await Do(this.ns, "ns.getServer", this.name)).httpPortOpen;
+			} catch(e) {
+				return false;
+			}
+		})();
+	}
+	get ip() {
+        return (async () => {
+			try {
+				return (await Do(this.ns, "ns.getServer", this.name)).ip;
+			} catch(e) {
+				return "0.0.0.0";
+			}
+		})();
+	}
+	get isConnectedTo() {
+        return (async () => {
+			try {
+				return (await Do(this.ns, "ns.getServer", this.name)).isConnectedTo;
+			} catch(e) {
+				return "0.0.0.0";
+			}
+		})();
+	}
+    get maxRam() {
+		return (async () => {
+			try {
+				return await Do(this.ns, "ns.getServerMaxRam", this.name);
+			} catch(e) {
+				return -1;
+			}
+		})();
+    }
+    get minDifficulty() {
+		return (async () => {
+			try {
+				return await Do(this.ns, "ns.getServerMinSecurityLevel", this.name);
+			} catch(e) {
+				return -1;
+			}
+		})();
+    }
+    get moneyAvailable() {
+		return (async () => {
+			try {
+				return await Do(this.ns, "ns.getServerMoneyAvailable", this.name);
+			} catch(e) {
+				return -1;
+			}
+		})();
+    }
+    get moneyMax() {
 		return (async () => {
 			try {
 				return await Do(this.ns, "ns.getServerMaxMoney", this.name);
@@ -110,13 +185,119 @@ export class Server {
 			}
 		})();
     }
-    get maxRam() {
+	get numOpenPortsRequired() {
+        return (async () => {
+			try {
+				return (await Do(this.ns, "ns.getServer", this.name)).numOpenPortsRequired;
+			} catch(e) {
+				return 6;
+			}
+		})();
+	}
+	get openPortCount() {
+        return (async () => {
+			try {
+				return (await Do(this.ns, "ns.getServer", this.name)).openPortCount;
+			} catch(e) {
+				return -1;
+			}
+		})();
+	}
+	get purchasedByPlayer() {
+        return (async () => {
+			try {
+				return (await Do(this.ns, "ns.getServer", this.name)).purchasedByPlayer;
+			} catch(e) {
+				return -1;
+			}
+		})();
+	}
+    get ramUsed() {
 		return (async () => {
 			try {
-				return await Do(this.ns, "ns.getServerMaxRam", this.name);
+				return await Do(this.ns, "ns.getServerUsedRam", this.name);
+			} catch(e) {
+				return -1;
+			}
+		})();
+    }
+    get requiredHackingSkill() {
+		return (async () => {
+			try {
+				return await Do(this.ns, "ns.getServerRequiredHackingLevel", this.name);
+			} catch(e) {
+				return -1;
+			}
+		})();
+    }
+    get serverGrowth() {
+		return (async () => {
+			try {
+				return await Do(this.ns, "ns.getServerGrowth", this.name);
+			} catch(e) {
+				return -1;
+			}
+		})();
+    }
+	get smtpPortOpen() {
+        return (async () => {
+			try {
+				return (await Do(this.ns, "ns.getServer", this.name)).smtpPortOpen;
 			} catch(e) {
 				return false;
 			}
 		})();
-     }
+	}
+	get sqlPortOpen() {
+        return (async () => {
+			try {
+				return (await Do(this.ns, "ns.getServer", this.name)).smtpPortOpen;
+			} catch(e) {
+				return false;
+			}
+		})();
+	}
+	get sshPortOpen() {
+        return (async () => {
+			try {
+				return (await Do(this.ns, "ns.getServer", this.name)).sshPortOpen;
+			} catch(e) {
+				return false;
+			}
+		})();
+	}
+}
+
+export class CacheServer {
+    constructor(ns, name = "home") {
+		this.ns = ns;
+        this.name = name;
+		this.server = new Server(ns, this.name);
+	}
+	async init() {
+		this.backdoorInstalled = await this.server.backdoorInstalled;
+		this.baseDifficulty = await this.server.baseDifficulty;
+		this.cpuCores = await this.server.cpuCores;
+		this.ftpPortOpen = await this.server.ftpPortOpen;
+		this.hackDifficulty = await this.server.hackDifficulty;
+		this.hasAdminRights = await this.server.hasAdminRights;
+		this.hostname = await this.server.hostname;
+		this.httpPortOpen = await this.server.httpPortOpen;
+		this.ip = await this.server.ip;
+		this.isConnectedTo = await this.server.isConnectedTo;
+		this.maxRam = await this.server.maxRam;
+		this.minDifficulty = await this.server.minDifficulty;
+		this.moneyAvailable = await this.server.moneyAvailable;
+		this.moneyMax = await this.server.moneyMax;
+		this.numOpenPortsRequired = await this.server.numOpenPortsRequired;
+		this.openPortCount = await this.server.openPortCount;
+		this.organizationName = await this.server.organizationName;
+		this.purchasedByPlayer = await this.server.purchasedByPlayer;
+		this.ramUsed = await this.server.ramUsed;
+		this.requiredHackingSkill = await this.server.requiredHackingSkill;
+		this.serverGrowth = await this.server.serverGrowth;
+		this.smtpPortOpen = await this.server.smtpPortOpen;
+		this.sqlPortOpen = await this.server.sqlPortOpen;
+		this.sshPortOpen = await this.server.sshPortOpen;
+    }
 }

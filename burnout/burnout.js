@@ -518,7 +518,7 @@ class Corp {
 			"Cost": 150e9
 		}
     }, plan = {
-		0: {
+		1: {
 			"Upgrades": {
 				"FocusWires": 2,
 				"Neural Accelerators": 2,
@@ -535,7 +535,7 @@ class Corp {
     			}
 	    	}
     	},
-		1: {
+		2: {
 			"Upgrades": {
 				"Smart Factories": 10,
 				"Smart Storage": 10
@@ -544,24 +544,6 @@ class Corp {
 				"Agriculture": {
 					"Employees": 9,
 					"Storage": 2000
-				}
-			}
-		},
-		2: {
-			"Upgrades": {
-				"Wilson Analytics": 14,
-				"FocusWires": 20,
-				"Neural Accelerators": 20,
-				"Speech Processor Implants": 20,
-				"NuOptimal NooTropic Injector Implants": 20
-			},
-			"Divisions": {
-				"Agriculture": {
-					"Employees": 9,
-					"Storage": 3800
-				},
-				"Tobacco": {
-					"Employees": 30
 				}
 			}
 		},
@@ -600,24 +582,6 @@ class Corp {
 					"Employees": 30
 				}
 			}
-		},
-		5: {
-			"Upgrades": {
-				"Wilson Analytics": 14,
-				"FocusWires": 20,
-				"Neural Accelerators": 20,
-				"Speech Processor Implants": 20,
-				"NuOptimal NooTropic Injector Implants": 20
-			},
-			"Divisions": {
-				"Agriculture": {
-					"Employees": 9,
-					"Storage": 3800
-				},
-				"Tobacco": {
-					"Employees": 30
-				}
-			}
 		}
 	}) {
 		this.ns = ns;
@@ -630,11 +594,37 @@ class Corp {
 	get round() {
 		return (async () => {
 			try {
-				return await Do(this.ns, "ns.corporation.getInvestmentOffer().round", this.name);
+				return (await Do(this.ns, "ns.corporation.getInvestmentOffer", this.name)).round;
 			} catch(e) {
 				return -1;
 			}
 		})();
+	}
+	get divisions() {
+		return (async () => {
+			try {
+				return (await Do(this.ns, "ns.corporation.getCorporation", this.name)).divisions;
+			} catch(e) {
+				return -1;
+			}
+		})();
+	}
+	async loop() {
+		if (!((await Do(this.ns, "ns.getPlayer", "")).hasCorporation)) {
+			if (((await Do(this.ns, "ns.singularity.getOwnedSourceFiles", "")).map(i => i['n']).includes(3))) {
+				await Do(this.ns, "ns.corporation.createCorporation", this.names["Corp"], 3 == (await Do(this.ns, "ns.getPlayer")).bitNodeN);
+			}
+	    }
+		if (((await Do(this.ns, "ns.getPlayer", "")).hasCorporation)) {
+			// You have a corporation.
+			for (let i = 1 ; i < 1 + await this.round ; i++) {
+			    for (let division of Object.keys(((this.plan[i])["Divisions"]))) {
+				    if (!((await this.divisions).map(x => x.type).includes(division))) {
+					    await Do(this.ns, "ns.corporation.expandIndustry", division, this.names[division]["Name"]);
+				    }
+			    }
+		    }
+		}
 	}
 }
 
@@ -648,11 +638,11 @@ export async function main(ns) {
 	let corp = new Corp(ns);
 	await corp.init();
 	const options = ns.flags(possibleArguments);
-	if (options.corp) {
-		while (true) {
+	while (true) {
+		if (options.corp) {
 			await corp.loop();
-			await ns.sleep(0);
 		}
+		await ns.sleep(0);
 	}
 	// Stanek
 	// LOOP
